@@ -1,0 +1,120 @@
+{
+  "model_type": "GradientBoostingClassifier",
+  "target": "TeamWin",
+  "target_labels": {
+    "0": "Defeat",
+    "1": "Victory"
+  },
+  "features": [
+    "Map_enc",
+    "Rank_enc",
+    "EconRating",
+    "FirstBloods",
+    "SpikePlants",
+    "Kills",
+    "Deaths",
+    "KD_Ratio"
+  ],
+  "feature_importance": [
+    {
+      "feature": "KD_Ratio",
+      "importance": 0.48845798288633135
+    },
+    {
+      "feature": "FirstBloods",
+      "importance": 0.17311212583834992
+    },
+    {
+      "feature": "SpikePlants",
+      "importance": 0.16917138771597917
+    },
+    {
+      "feature": "EconRating",
+      "importance": 0.12670836149154116
+    },
+    {
+      "feature": "Kills",
+      "importance": 0.019163360370611095
+    },
+    {
+      "feature": "Deaths",
+      "importance": 0.0154910315999969
+    },
+    {
+      "feature": "Map_enc",
+      "importance": 0.005478831222791606
+    },
+    {
+      "feature": "Rank_enc",
+      "importance": 0.0024169188743989093
+    }
+  ],
+  "top_features": [
+    "KD_Ratio",
+    "FirstBloods",
+    "SpikePlants",
+    "EconRating",
+    "Kills"
+  ],
+  "encoder_maps": {
+    "Map": {
+      "Ascent": 0,
+      "Bind": 1,
+      "Breeze": 2,
+      "Haven": 3,
+      "Icebox": 4,
+      "Lotus": 5,
+      "Pearl": 6,
+      "Split": 7,
+      "Sunset": 8
+    },
+    "AverageRank": {
+      "Ascendant": 0,
+      "Diamond": 1,
+      "Gold": 2,
+      "Immortal": 3,
+      "Platinum": 4,
+      "Silver": 5
+    }
+  },
+  "feature_stats": {
+    "EconRating": {
+      "mean": 55.0856,
+      "min": 20.0,
+      "max": 100.0
+    },
+    "FirstBloods": {
+      "mean": 11.968,
+      "min": 0.0,
+      "max": 26.0
+    },
+    "SpikePlants": {
+      "mean": 7.0353,
+      "min": 0.0,
+      "max": 13.0
+    },
+    "Kills": {
+      "mean": 59.939,
+      "min": 24.0,
+      "max": 95.0
+    },
+    "Deaths": {
+      "mean": 59.9063,
+      "min": 22.0,
+      "max": 99.0
+    },
+    "KD_Ratio": {
+      "mean": 1.030983,
+      "min": 0.34,
+      "max": 3.64
+    }
+  },
+  "metrics": {
+    "accuracy": 0.8555,
+    "precision": 0.857,
+    "recall": 0.8562,
+    "f1_score": 0.8566,
+    "cv_mean": 0.868,
+    "cv_std": 0.0068
+  }
+}

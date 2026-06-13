@@ -1,0 +1,51 @@
+# ========================
+# Python / Virtual Environment
+# ========================
+venv/
+env/
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ========================
+# Distribution / Packaging
+# ========================
+dist/
+build/
+*.egg-info/
+*.egg
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ========================
+# OS Generated Files
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# MLflow & Experiment Tracking
+# ========================
+mlruns/
+mlartifacts/
+
+# ========================
+# Jupyter Notebook
+# ========================
+.ipynb_checkpoints/
+
+# ========================
+# Misc
+# ========================
+*.log
+*.tmp

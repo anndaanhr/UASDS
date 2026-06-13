@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Valorant Match Outcome Predictor - Prediksi hasil pertandingan Valorant dengan Machine Learning."/>
+  <title>VALORANT | Match Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+<!-- NOISE OVERLAY -->
+<div class="noise"></div>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a class="nav-brand" href="#hero">
+      <svg class="brand-logo" viewBox="0 0 40 40" fill="none">
+        <polygon points="20,2 37,11 37,29 20,38 3,29 3,11" fill="#ff4655" opacity="0.15"/>
+        <polygon points="20,6 33,13.5 33,26.5 20,34 7,26.5 7,13.5" fill="none" stroke="#ff4655" stroke-width="1.5"/>
+        <polygon points="20,13 27,17 27,23 20,27 13,23 13,17" fill="#ff4655"/>
+      </svg>
+      <div class="brand-words">
+        <span class="brand-title">VALORANT</span>
+        <span class="brand-sub">MATCH PREDICTOR</span>
+      </div>
+    </a>
+
+    <div class="nav-links">
+      <button class="nav-btn active" id="nav-dashboard" data-tab="dashboard">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        DASHBOARD
+      </button>
+      <button class="nav-btn" id="nav-prediction" data-tab="prediction">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>
+        PREDIKSI
+      </button>
+    </div>
+
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      <span>MODEL AKURASI</span>
+      <strong>{{ "%.1f"|format(model_metrics.accuracy * 100) }}%</strong>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <img src="{{ url_for('static', filename='img/mapbg.png') }}" alt="" class="hero-bg-img"/>
+    <div class="hero-overlay"></div>
+    <div class="hero-scanlines"></div>
+    <!-- corner decorations -->
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+  </div>
+
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-line"></span>
+        <span>VALORANT TACTICAL INTELLIGENCE</span>
+        <span class="eyebrow-line"></span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="ht-small">MATCH OUTCOME</span>
+        <span class="ht-big">PREDICTOR</span>
+        <span class="ht-accent">VALORANT</span>
+      </h1>
+
+      <p class="hero-desc">
+        Sistem prediksi berbasis <em>Gradient Boosting</em> yang menganalisis
+        statistik pertandingan kompetitif untuk memprediksi probabilitas kemenangan tim secara real-time.
+      </p>
+
+      <!-- Stats Row -->
+      <div class="hero-metrics">
+        <div class="hm-card">
+          <div class="hm-val">10K+</div>
+          <div class="hm-key">MATCH DATA</div>
+        </div>
+        <div class="hm-sep"></div>
+        <div class="hm-card">
+          <div class="hm-val accent">{{ "%.1f"|format(model_metrics.accuracy * 100) }}%</div>
+          <div class="hm-key">AKURASI</div>
+        </div>
+        <div class="hm-sep"></div>
+        <div class="hm-card">
+          <div class="hm-val">{{ "%.3f"|format(model_metrics.f1_score) }}</div>
+          <div class="hm-key">F1-SCORE</div>
+        </div>
+        <div class="hm-sep"></div>
+        <div class="hm-card">
+          <div class="hm-val">8</div>
+          <div class="hm-key">FEATURES</div>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <button class="btn-valo primary" onclick="switchTab('prediction')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>
+          PREDIKSI SEKARANG
+        </button>
+        <button class="btn-valo ghost" onclick="switchTab('dashboard')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          LIHAT DASHBOARD
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="agent-frame">
+        <div class="agent-glow"></div>
+        <img src="{{ url_for('static', filename='img/agent.png') }}" alt="Valorant Agent" class="agent-img"/>
+        <div class="agent-badge">
+          <span class="ab-rank">GBT</span>
+          <span class="ab-label">GRADIENT BOOSTING</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-scroll-hint">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>
+  </div>
+</section>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- â”€â”€ TAB: DASHBOARD â”€â”€ -->
+  <section class="tab-pane active" id="section-dashboard" data-tab-content="dashboard">
+    <div class="pane-header">
+      <div class="ph-tag">// DATA VISUALIZATION</div>
+      <h2 class="ph-title">PERFORMANCE <span class="accent">DASHBOARD</span></h2>
+      <p class="ph-desc">Analisis mendalam dari <strong>{{ analytics.total_matches | default(10000) | int | string }}+ pertandingan</strong> Valorant kompetitif menggunakan Gradient Boosting ML.</p>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-red">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val" data-count="{{ analytics.total_matches | default(10000) | int }}" data-suffix="">0</div>
+          <div class="kpi-label">Total Match</div>
+        </div>
+        <div class="kpi-trend up">+100%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-cyan">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val cyan" data-count="{{ analytics.overall_wr | default(50.0) }}" data-suffix="%" data-decimals="1">0%</div>
+          <div class="kpi-label">Avg Win Rate</div>
+        </div>
+        <div class="kpi-trend up">Balanced</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-gold">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val gold" data-count="{{ analytics.avg_kd | default(1.0) }}" data-suffix="" data-decimals="2">0</div>
+          <div class="kpi-label">Avg K/D Ratio</div>
+        </div>
+        <div class="kpi-trend">Dataset avg</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-purple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val purple" data-count="{{ analytics.avg_kills | default(70) }}" data-suffix="" data-decimals="1">0</div>
+          <div class="kpi-label">Avg Total Kills</div>
+        </div>
+        <div class="kpi-trend">Per match</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-red">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val" data-count="{{ analytics.avg_fb | default(5) }}" data-suffix="" data-decimals="1">0</div>
+          <div class="kpi-label">Avg First Bloods</div>
+        </div>
+        <div class="kpi-trend">High impact</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-cyan">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val cyan" data-count="{{ analytics.avg_plants | default(5) }}" data-suffix="" data-decimals="1">0</div>
+          <div class="kpi-label">Avg Spike Plants</div>
+        </div>
+        <div class="kpi-trend">Per match</div>
+      </div>
+    </div>
+
+    <!-- LOOKER STUDIO EMBED -->
+    <div class="looker-box">
+      <div class="looker-header">
+        <div class="lh-dots"><span></span><span></span><span></span></div>
+        <span class="lh-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          VALORANT ANALYTICS - LOOKER STUDIO
+        </span>
+        <div class="lh-live"><div class="live-dot"></div> LIVE</div>
+      </div>
+      <div class="looker-body">
+        <div class="looker-overlay" id="looker-overlay">
+          <div class="lo-spinner"></div>
+          <span>Memuat Google Looker Studio...</span>
+        </div>
+        <iframe
+          id="looker-iframe"
+          src="https://lookerstudio.google.com/embed/reporting/b48664c0-9c67-49e2-b051-9a7e876127b0/page/Aq80F"
+          frameborder="0"
+          allowfullscreen
+          sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          title="Valorant Analytics Dashboard - Google Looker Studio"
+          onload="document.getElementById('looker-overlay').style.display='none'">
+        </iframe>
+      </div>
+    </div>
+
+
+    <!-- MODEL METRICS STRIP -->
+    <div class="metrics-strip">
+      {% set mets = [
+        ('ACCURACY',  "%.1f%%"|format(model_metrics.accuracy*100)),
+        ('PRECISION', "%.3f"|format(model_metrics.precision)),
+        ('RECALL',    "%.3f"|format(model_metrics.recall)),
+        ('F1-SCORE',  "%.3f"|format(model_metrics.f1_score)),
+        ('CV MEAN',   "%.3f"|format(model_metrics.cv_mean)),
+        ('CV STD',    "%.4f"|format(model_metrics.cv_std)),
+        ('ALGORITHM', 'Gradient Boosting'),
+        ('DATASET',   '10,000 rows')
+      ] %}
+      {% for label, val in mets %}
+      <div class="ms-item">
+        <div class="ms-val">{{ val }}</div>
+        <div class="ms-label">{{ label }}</div>
+      </div>
+      {% if not loop.last %}<div class="ms-sep"></div>{% endif %}
+      {% endfor %}
+    </div>
+  </section>
+
+
+  <!-- â”€â”€ TAB: PREDIKSI â”€â”€ -->
+  <section class="tab-pane" id="section-prediction" data-tab-content="prediction">
+    <div class="pane-header">
+      <div class="ph-tag">// ML PREDICTION ENGINE</div>
+      <h2 class="ph-title">PREDIKSI <span class="accent">HASIL MATCH</span></h2>
+      <p class="ph-desc">Masukkan statistik pertandingan untuk mendapatkan probabilitas kemenangan tim.</p>
+    </div>
+
+    <div class="predict-grid">
+      <!-- FORM CARD -->
+      <div class="valo-card form-card">
+        <div class="vc-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff4655" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          STATISTIK MATCH INPUT
+          <div class="vc-header-line"></div>
+        </div>
+
+        <form id="predict-form" novalidate>
+          <div class="form-grid">
+            <div class="fg">
+              <label class="fl" for="input-map">MAP</label>
+              <div class="fs-wrap">
+                <select class="fi-sel" id="input-map" name="Map" required>
+                  <option value="" disabled selected>Pilih Map...</option>
+                  {% for m in map_list %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+                </select>
+                <svg class="fs-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6,9 12,15 18,9"/></svg>
+              </div>
+            </div>
+
+            <div class="fg">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                <label class="fl" for="input-rank">AVERAGE RANK</label>
+                <img id="form-rank-icon" src="" alt="Rank Icon" style="display: none; height: 18px; width: 18px; object-fit: contain; filter: drop-shadow(0 0 3px rgba(255,255,255,0.3));"/>
+              </div>
+              <div class="fs-wrap">
+                <select class="fi-sel" id="input-rank" name="AverageRank" required>
+                  <option value="" disabled selected>Pilih Rank...</option>
+                  {% for r in rank_list %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+                </select>
+                <svg class="fs-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6,9 12,15 18,9"/></svg>
+              </div>
+            </div>
+
+            <div class="fg">
+              <label class="fl" for="input-econ">ECON RATING</label>
+              <div class="fi-inp-wrap">
+                <input class="fi-inp" type="number" id="input-econ" name="EconRating"
+                  min="{{ feature_stats.EconRating.min|int }}" max="{{ feature_stats.EconRating.max|int }}" step="1" required
+                  placeholder="Avg {{ feature_stats.EconRating.mean|round(0)|int }}"/>
+                <span class="fi-range">{{ feature_stats.EconRating.min|int }} - {{ feature_stats.EconRating.max|int }}</span>
+              </div>
+            </div>
+
+            <div class="fg">
+              <label class="fl" for="input-kd">K/D RATIO</label>
+              <div class="fi-inp-wrap">
+                <input class="fi-inp" type="number" id="input-kd" name="KD_Ratio"
+                  min="{{ feature_stats.KD_Ratio.min }}" max="{{ feature_stats.KD_Ratio.max }}" step="0.01" required
+                  placeholder="Avg {{ feature_stats.KD_Ratio.mean|round(2) }}"/>
+                <span class="fi-range">{{ feature_stats.KD_Ratio.min }} - {{ feature_stats.KD_Ratio.max }}</span>
+              </div>
+            </div>
+
+            <div class="fg">
+              <label class="fl" for="input-kills">TOTAL KILLS</label>
+              <div class="fi-inp-wrap">
+                <input class="fi-inp" type="number" id="input-kills" name="Kills"
+                  min="{{ feature_stats.Kills.min|int }}" max="{{ feature_stats.Kills.max|int }}" step="1" required
+                  placeholder="Avg {{ feature_stats.Kills.mean|round(0)|int }}"/>
+                <span class="fi-range">{{ feature_stats.Kills.min|int }} - {{ feature_stats.Kills.max|int }}</span>
+              </div>
+            </div>
+
+            <div class="fg">
+              <label class="fl" for="input-deaths">TOTAL DEATHS</label>
+              <div class="fi-inp-wrap">
+                <input class="fi-inp" type="number" id="input-deaths" name="Deaths"
+                  min="{{ feature_stats.Deaths.min|int }}" max="{{ feature_stats.Deaths.max|int }}" step="1" required
+                  placeholder="Avg {{ feature_stats.Deaths.mean|round(0)|int }}"/>
+                <span class="fi-range">{{ feature_stats.Deaths.min|int }} - {{ feature_stats.Deaths.max|int }}</span>
+              </div>
+            </div>
+
+            <div class="fg">
+              <label class="fl" for="input-fb">FIRST BLOODS</label>
+              <div class="fi-inp-wrap">
+                <input class="fi-inp" type="number" id="input-fb" name="FirstBloods"
+                  min="{{ feature_stats.FirstBloods.min|int }}" max="{{ feature_stats.FirstBloods.max|int }}" step="1" required
+                  placeholder="Avg {{ feature_stats.FirstBloods.mean|round(0)|int }}"/>
+                <span class="fi-range">{{ feature_stats.FirstBloods.min|int }} - {{ feature_stats.FirstBloods.max|int }}</span>
+              </div>
+            </div>
+
+            <div class="fg">
+              <label class="fl" for="input-spike">SPIKE PLANTS</label>
+              <div class="fi-inp-wrap">
+                <input class="fi-inp" type="number" id="input-spike" name="SpikePlants"
+                  min="{{ feature_stats.SpikePlants.min|int }}" max="{{ feature_stats.SpikePlants.max|int }}" step="1" required
+                  placeholder="Avg {{ feature_stats.SpikePlants.mean|round(0)|int }}"/>
+                <span class="fi-range">{{ feature_stats.SpikePlants.min|int }} - {{ feature_stats.SpikePlants.max|int }}</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-valo primary full" type="submit" id="btn-predict">
+            <span class="btn-text">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>
+              JALANKAN PREDIKSI
+            </span>
+            <span class="btn-loading" style="display:none">
+              <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+              MEMPROSES...
+            </span>
+          </button>
+        </form>
+      </div>
+
+      <!-- PREDICTION HISTORY -->
+      <div class="valo-card history-card" id="history-card" style="display:none">
+        <div class="vc-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+          RIWAYAT PREDIKSI
+          <div class="vc-header-line"></div>
+        </div>
+        <div class="history-body" id="history-body">
+          <table class="history-table">
+            <thead>
+              <tr><th>MAP</th><th>RANK</th><th>K/D</th><th>HASIL</th><th>WIN %</th></tr>
+            </thead>
+            <tbody id="history-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RESULT CARD -->
+      <div class="valo-card result-card" id="result-card">
+
+        <!-- MAP PREVIEW HUD -->
+        <div class="result-map-preview" id="result-map-preview" style="display: none;">
+          <div class="rmp-img-wrapper">
+            <img id="rmp-img" src="" alt="Map Preview"/>
+            <div class="rmp-rank-badge" id="rmp-rank-badge" style="display: none;">
+              <img id="rmp-rank-icon" src="" alt="Rank Icon"/>
+            </div>
+            <div class="rmp-overlay"></div>
+            <div class="rmp-scanlines"></div>
+            <div class="rmp-hud">
+              <span class="rmp-hud-corner tl"></span>
+              <span class="rmp-hud-corner tr"></span>
+              <span class="rmp-hud-corner bl"></span>
+              <span class="rmp-hud-corner br"></span>
+              <div class="rmp-hud-label">MAP VIEWPORT</div>
+            </div>
+          </div>
+          <div class="rmp-info">
+            <span class="rmp-title" id="rmp-name">-</span>
+            <span class="rmp-coords" id="rmp-coords">-</span>
+          </div>
+        </div>
+
+        <!-- IDLE -->
+        <div class="result-idle" id="result-idle">
+          <div class="idle-hex">
+            <svg viewBox="0 0 100 100" fill="none">
+              <polygon points="50,5 92,27.5 92,72.5 50,95 8,72.5 8,27.5" stroke="#ff4655" stroke-width="2" fill="rgba(255,70,85,0.05)"/>
+              <polygon points="50,18 79,34 79,66 50,82 21,66 21,34" stroke="#ff4655" stroke-width="1" stroke-dasharray="4 3" fill="none" opacity="0.5"/>
+              <polygon points="50,32 67,41.5 67,58.5 50,68 33,58.5 33,41.5" fill="rgba(255,70,85,0.15)"/>
+            </svg>
+          </div>
+          <p class="idle-title">AWAITING INPUT</p>
+          <p class="idle-sub">Isi statistik match untuk memulai analisis prediktif</p>
+        </div>
+
+        <!-- RESULT CONTENT -->
+        <div class="result-content" id="result-content" style="display:none">
+          <div class="rc-top">
+            <div class="rc-label-tag">MATCH PREDICTION RESULT</div>
+            <div class="rc-verdict" id="rc-verdict">-</div>
+            <div class="rc-sublabel" id="rc-sublabel">-</div>
+          </div>
+
+          <div class="rc-prob">
+            <div class="rcp-header">
+              <span class="rcp-title">WIN PROBABILITY</span>
+              <span class="rcp-pct" id="rcp-pct">0%</span>
+            </div>
+            <div class="rcp-track">
+              <div class="rcp-fill" id="rcp-fill" style="width:0%"></div>
+              <div class="rcp-marker" style="left:50%"></div>
+            </div>
+            <div class="rcp-ends">
+              <span>&lt; DEFEAT</span>
+              <span>50%</span>
+              <span>VICTORY &gt;</span>
+            </div>
+          </div>
+
+          <div class="rc-conf-row">
+            <span class="rcr-label">CONFIDENCE LEVEL</span>
+            <span class="rcr-badge" id="rcr-badge">-</span>
+          </div>
+
+          <!-- TACTICAL ANALYST -->
+          <div class="rc-section" id="rc-tactical">
+            <div class="rcs-header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span class="rcs-title">TACTICAL ANALYSIS</span>
+            </div>
+            <div class="rcs-body" id="tactical-body">
+              <!-- JS injects tactical advice here -->
+            </div>
+          </div>
+
+          <!-- FEATURE IMPACT BARS -->
+          <div class="rc-section" id="rc-impact">
+            <div class="rcs-header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              <span class="rcs-title">FEATURE IMPACT</span>
+            </div>
+            <div class="rcs-body" id="impact-body">
+              <!-- JS injects feature bars here -->
+            </div>
+          </div>
+
+          <!-- WHAT-IF SIMULATOR -->
+          <div class="rc-section" id="rc-whatif">
+            <div class="rcs-header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span class="rcs-title">WHAT-IF SIMULATOR</span>
+            </div>
+            <div class="rcs-body">
+              <div class="wif-row">
+                <label class="wif-label" for="wif-kd">K/D RATIO</label>
+                <input type="range" class="wif-slider" id="wif-kd" min="0.34" max="3.64" step="0.01" value="1.03"/>
+                <span class="wif-val" id="wif-kd-val">1.03</span>
+              </div>
+              <div class="wif-row">
+                <label class="wif-label" for="wif-fb">FIRST BLOODS</label>
+                <input type="range" class="wif-slider" id="wif-fb" min="0" max="26" step="1" value="12"/>
+                <span class="wif-val" id="wif-fb-val">12</span>
+              </div>
+              <div class="wif-result">
+                <span class="wif-result-label">SIMULATED WIN %</span>
+                <span class="wif-result-pct" id="wif-pct">-</span>
+              </div>
+              <div class="wif-note">Geser slider untuk melihat perubahan probabilitas secara real-time</div>
+            </div>
+          </div>
+
+          <button class="btn-valo ghost full small" onclick="resetResult()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-3.86"/></svg>
+            RESET / PREDIKSI ULANG
+          </button>
+        </div>
+
+        <!-- ERROR -->
+        <div class="result-error" id="result-error" style="display:none">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ff4655" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <p id="err-msg">Terjadi kesalahan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="fi-brand">
+      <svg width="16" height="16" viewBox="0 0 28 28" fill="none"><polygon points="14,9 19,12 19,16 14,19 9,16 9,12" fill="#ff4655"/></svg>
+      VALORANT MATCH PREDICTOR
+    </div>
+    <div class="fi-copy">Created by Ananda Anhar Subing &bull; Valorant Match Outcome Prediction System</div>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+
