@@ -34,12 +34,20 @@ if (form) form.addEventListener("submit", async e => {
 
 function validateForm() {
   let ok = true;
+  let firstInvalid = null;
   form.querySelectorAll("[required]").forEach(el => {
-    const empty = el.value === "";
-    el.style.borderColor = empty ? "var(--red)" : "";
-    if (empty) ok = false;
+    const valid = el.checkValidity();
+    el.style.borderColor = valid ? "" : "var(--red)";
+    if (!valid) {
+      ok = false;
+      if (!firstInvalid) firstInvalid = el;
+    }
   });
-  if (!ok) form.style.animation = "none", requestAnimationFrame(() => form.style.animation = "shake .35s ease");
+  if (!ok) {
+    form.style.animation = "none";
+    requestAnimationFrame(() => form.style.animation = "shake .35s ease");
+    if (firstInvalid) firstInvalid.reportValidity();
+  }
   return ok;
 }
 
