@@ -1,4 +1,4 @@
-# VALORANT Match Predictor 🎮🤖
+# VALORANT Match Predictor
 
 A machine learning-powered web application that predicts the outcome of a Valorant match based on your in-game statistics. Developed as a final project for Data Science (UAS DS).
 
@@ -60,7 +60,7 @@ The prediction engine runs on a pre-trained `GradientBoostingClassifier` saved a
 
 *Model metadata, including feature importance and dataset averages, is stored in `model_metadata.json`.*
 
-## 👨‍💻 Created By
+## Created By
 
 **Ananda Anhar Subing**
-UAS Data Science 2026
+ For UAS Data Science
